@@ -1,0 +1,59 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": ""
+  },
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "access_key": "{{ user `aws_access_key` }}",
+      "secret_key": "{{ user `aws_secret_key` }}",
+      "region": "us-east-1",
+      "source_ami": "ami-046842448f9e74e7d",
+      "instance_type": "t2.micro",
+      "ssh_username": "ubuntu",
+      "ami_name": "Devin Young Code Test - {{ timestamp }}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sleep 10",
+        "sudo apt-get update",
+        "sudo apt-get -y upgrade", 
+        "sudo apt-get -y install python3-pip python3-dev python3-setuptools python3-venv virtualenv nginx supervisor",
+        "sudo mkdir /app",
+        "sudo chown -R ubuntu:www-data /app",
+        "virtualenv -p python3 /app/.venv",
+        ". /app/.venv/bin/activate",
+        "pip install pipenv"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "./service/",
+      "destination": "/app"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        ". /app/.venv/bin/activate",
+        "cd /app",
+        "pipenv install",
+        "sudo rm -rf /etc/nginx/sites-enabled/default",
+        "sudo ln -nfs /app/supervisor/flaskapp.conf /etc/supervisor/conf.d/flaskapp.conf",
+        "sudo supervisorctl reread",
+        "sudo service supervisor restart",
+        "sudo ln -nfs /app/nginx/flaskapp /etc/nginx/sites-enabled/flaskapp"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "output": "manifest.json",
+      "strip_path": true
+    }
+  ]
+}

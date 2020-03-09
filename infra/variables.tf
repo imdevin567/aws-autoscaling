@@ -15,14 +15,14 @@ variable "aws_secret_key" {
 
 variable "vpc_id" {
   description = "AWS VPC to use"
-  default     = "vpc-7d578a1b"
+  default     = "vpc-0087b57a"
 }
 
 variable "subnet_ids" {
   description = "AWS subnets to use"
   default = [
-    "subnet-e85f12a1",
-    "subnet-7f41d524"
+    "subnet-28c37265",
+    "subnet-38806267"
   ]
 }
 
